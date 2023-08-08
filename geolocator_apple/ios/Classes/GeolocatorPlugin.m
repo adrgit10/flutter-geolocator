@@ -86,7 +86,12 @@
   } else if ([@"requestPermission" isEqualToString:call.method]) {
     [self onRequestPermission:result];
   } else if ([@"isLocationServiceEnabled" isEqualToString:call.method]) {
-    [self onIsLocationServiceEnabled:result];
+      dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        BOOL isEnabled = [CLLocationManager locationServicesEnabled];
+        dispatch_async(dispatch_get_main_queue(), ^(void) {
+            result([NSNumber numberWithBool:isEnabled]);
+        });
+      });
   } else if ([@"getLastKnownPosition" isEqualToString:call.method]) {
     [self onGetLastKnownPosition:result];
   } else if ([@"getCurrentPosition" isEqualToString:call.method]) {
@@ -122,15 +127,6 @@
                                message: errorDescription
                                details: nil]);
   }];
-}
-
-- (void)onIsLocationServiceEnabled:(FlutterResult)result {
-  dispatch_async(dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-    BOOL isEnabled = [CLLocationManager locationServicesEnabled];
-    dispatch_async(dispatch_get_main_queue(), ^(void) {
-        result([NSNumber numberWithBool:isEnabled]);
-    });
-  });
 }
 
 - (void)onGetLastKnownPosition:(FlutterResult)result {
